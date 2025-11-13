@@ -1,12 +1,145 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FileSpreadsheet, Database, TrendingUp, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const Index = () => {
+  const features = [
+    {
+      icon: FileSpreadsheet,
+      title: "Importação Inteligente",
+      description: "Reconhecimento automático de planilhas com mapeamento inteligente de colunas",
+    },
+    {
+      icon: Database,
+      title: "Validação Completa",
+      description: "Regras de negócio e validações financeiras integradas",
+    },
+    {
+      icon: TrendingUp,
+      title: "Conciliação Automática",
+      description: "Comparação de valores e detecção de divergências em tempo real",
+    },
+    {
+      icon: Shield,
+      title: "Segurança Total",
+      description: "Logs completos e rastreabilidade de todas as operações",
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-secondary py-24">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+        <div className="container relative mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <h1 className="text-5xl font-bold text-white md:text-6xl">
+              Importador Inteligente
+            </h1>
+            <p className="mt-6 text-xl text-white/90">
+              Sistema profissional de importação de planilhas para Consórcios Multiempresa
+            </p>
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
+                <Link to="/import">Iniciar Importação</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white/10"
+              >
+                <a href="#features">Conhecer Recursos</a>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="bg-background py-24">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mb-16 text-center"
+          >
+            <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+              Recursos Principais
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Tecnologia avançada para simplificar suas importações
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="group h-full border-border bg-card p-6 transition-all hover:border-primary hover:shadow-lg">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-all group-hover:bg-primary group-hover:text-white">
+                      <Icon className="h-6 w-6 text-primary transition-colors group-hover:text-white" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-foreground">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-primary to-secondary py-20">
+        <div className="container mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold text-white md:text-4xl">
+              Pronto para começar?
+            </h2>
+            <p className="mt-4 text-xl text-white/90">
+              Importe suas planilhas de forma rápida e segura
+            </p>
+            <Button
+              asChild
+              size="lg"
+              className="mt-8 bg-white text-primary hover:bg-white/90"
+            >
+              <Link to="/import">Iniciar Agora</Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-card py-8">
+        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
+          <p>ERP Consórcios Multiempresa © 2025. Todos os direitos reservados.</p>
+        </div>
+      </footer>
     </div>
   );
 };
