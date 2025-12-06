@@ -11,7 +11,8 @@ import {
   Users,
   Building2,
   Receipt,
-  AlertCircle
+  AlertCircle,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,15 +20,19 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { ImportData } from "@/pages/Import";
 import { processImport, ImportProgress, ImportResult } from "@/lib/import/importService";
+import type { DivergenceItem } from "@/components/import/DivergenceReviewStep";
+import * as XLSX from "xlsx";
 
 interface ConfirmationStepProps {
   importData: ImportData;
+  divergences?: DivergenceItem[];
   onBack: () => void;
   onComplete: () => void;
 }
 
 const ConfirmationStep = ({
   importData,
+  divergences = [],
   onBack,
   onComplete,
 }: ConfirmationStepProps) => {
@@ -360,6 +365,30 @@ const ConfirmationStep = ({
             </div>
           </Card>
 
+          {/* Divergences Summary */}
+          {divergences.length > 0 && (
+            <Card className="border-border p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertTriangle className="h-5 w-5 text-warning" />
+                <h3 className="font-semibold text-foreground">Resumo de Divergências</h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="flex justify-between items-center p-3 rounded bg-warning/10 border border-warning/30">
+                  <span className="text-sm text-muted-foreground">Total</span>
+                  <Badge variant="secondary">{divergences.length}</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded bg-muted/50">
+                  <span className="text-sm text-muted-foreground">Ignorados</span>
+                  <Badge variant="outline">{divergences.filter(d => d.status === 'ignored').length}</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded bg-success/10 border border-success/30">
+                  <span className="text-sm text-muted-foreground">Ajustados</span>
+                  <Badge variant="default">{divergences.filter(d => d.status === 'adjusted').length}</Badge>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Warning */}
           <div className="rounded-lg border border-warning/50 bg-warning/10 p-4">
             <div className="flex items-start gap-3">
@@ -369,6 +398,8 @@ const ConfirmationStep = ({
                 <p className="text-sm text-warning/90 mt-1">
                   Esta ação criará registros no banco de dados. 
                   {importData.type === 'historico' && ' Dados históricos não serão sobrescritos.'}
+                  {divergences.filter(d => d.status === 'ignored').length > 0 && 
+                    ` ${divergences.filter(d => d.status === 'ignored').length} divergência(s) serão ignoradas.`}
                   {' '}Certifique-se de que os dados estão corretos antes de prosseguir.
                 </p>
               </div>

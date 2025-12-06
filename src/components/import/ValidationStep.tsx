@@ -15,6 +15,7 @@ interface ValidationStepProps {
   setImportData: (data: ImportData) => void;
   onNext: () => void;
   onBack: () => void;
+  onValidationComplete?: (result: ValidationResult) => void;
 }
 
 const ValidationStep = ({
@@ -22,6 +23,7 @@ const ValidationStep = ({
   setImportData,
   onNext,
   onBack,
+  onValidationComplete,
 }: ValidationStepProps) => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -76,6 +78,11 @@ const ValidationStep = ({
           } else {
             validation = validateAllRows(jsonData as Record<string, any>[], columns, detectedType);
             setValidationResult(validation);
+            
+            // Call the callback to pass validation result to parent
+            if (onValidationComplete) {
+              onValidationComplete(validation);
+            }
 
             validation.errors.slice(0, 10).forEach(err => {
               errors.push(`Linha ${err.row}: ${err.message}`);
