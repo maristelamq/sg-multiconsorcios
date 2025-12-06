@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, CheckCircle2 } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import UploadStep from "@/components/import/UploadStep";
 import ValidationStep from "@/components/import/ValidationStep";
+import DivergenceReviewStep, { type DivergenceItem } from "@/components/import/DivergenceReviewStep";
 import ConfirmationStep from "@/components/import/ConfirmationStep";
+import type { ValidationResult } from "@/lib/import/validators";
 
 export type ImportType = "historico" | "pagamento" | null;
 
@@ -28,12 +30,78 @@ const Import = () => {
     data: [],
     validationResults: null,
   });
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [divergences, setDivergences] = useState<DivergenceItem[]>([]);
 
   const steps = [
     { number: 1, title: "Upload", icon: Upload },
     { number: 2, title: "Validação", icon: FileSpreadsheet },
-    { number: 3, title: "Confirmação", icon: CheckCircle2 },
+    { number: 3, title: "Divergências", icon: AlertTriangle },
+    { number: 4, title: "Confirmação", icon: CheckCircle2 },
   ];
+
+  const handleValidationComplete = (result: ValidationResult) => {
+    setValidationResult(result);
+    
+    // Build divergences from validation result
+    const items: DivergenceItem[] = [];
+    let id = 0;
+    
+    // Add errors
+    result.errors.forEach((error) => {
+      items.push({
+        id: `err-${id++}`,
+        row: error.row,
+        type: 'error',
+        column: error.column,
+        originalValue: error.value,
+        adjustedValue: null,
+        message: error.message,
+        status: 'pending',
+      });
+    });
+    
+    // Add warnings
+    result.warnings.forEach((warning) => {
+      const type = warning.message.toLowerCase().includes('divergência') ? 'divergence' :
+                   warning.message.toLowerCase().includes('inadimpl') ? 'inadimplencia' :
+                   warning.message.toLowerCase().includes('cancel') ? 'cancelamento' :
+                   warning.message.toLowerCase().includes('estorno') ? 'estorno' : 'warning';
+      
+      items.push({
+        id: `warn-${id++}`,
+        row: warning.row,
+        type,
+        column: warning.column,
+        originalValue: warning.value,
+        adjustedValue: null,
+        message: warning.message,
+        status: 'pending',
+      });
+    });
+    
+    setDivergences(items);
+  };
+
+  const handleGoToStep3 = () => {
+    if (divergences.length > 0) {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep(4);
+    }
+  };
+
+  const resetImport = () => {
+    setCurrentStep(1);
+    setImportData({
+      file: null,
+      type: null,
+      data: [],
+      validationResults: null,
+    });
+    setValidationResult(null);
+    setDivergences([]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -51,7 +119,7 @@ const Import = () => {
 
       {/* Progress Stepper */}
       <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
           {steps.map((step, index) => {
             const Icon = step.icon;
             const isActive = currentStep === step.number;
@@ -99,7 +167,7 @@ const Import = () => {
 
                 {index < steps.length - 1 && (
                   <div
-                    className={`h-0.5 w-24 transition-all ${
+                    className={`h-0.5 w-16 lg:w-24 transition-all ${
                       currentStep > step.number ? "bg-success" : "bg-border"
                     }`}
                   />
@@ -112,7 +180,7 @@ const Import = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-6 pb-12">
-        <Card className="mx-auto max-w-4xl border-border bg-card shadow-lg">
+        <Card className="mx-auto max-w-5xl border-border bg-card shadow-lg">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
               <UploadStep
@@ -127,24 +195,29 @@ const Import = () => {
                 key="validation"
                 importData={importData}
                 setImportData={setImportData}
-                onNext={() => setCurrentStep(3)}
+                onNext={handleGoToStep3}
                 onBack={() => setCurrentStep(1)}
+                onValidationComplete={handleValidationComplete}
               />
             )}
             {currentStep === 3 && (
+              <DivergenceReviewStep
+                key="divergence"
+                importData={importData}
+                validationResult={validationResult}
+                divergences={divergences}
+                setDivergences={setDivergences}
+                onNext={() => setCurrentStep(4)}
+                onBack={() => setCurrentStep(2)}
+              />
+            )}
+            {currentStep === 4 && (
               <ConfirmationStep
                 key="confirmation"
                 importData={importData}
-                onBack={() => setCurrentStep(2)}
-                onComplete={() => {
-                  setCurrentStep(1);
-                  setImportData({
-                    file: null,
-                    type: null,
-                    data: [],
-                    validationResults: null,
-                  });
-                }}
+                divergences={divergences}
+                onBack={() => divergences.length > 0 ? setCurrentStep(3) : setCurrentStep(2)}
+                onComplete={resetImport}
               />
             )}
           </AnimatePresence>
