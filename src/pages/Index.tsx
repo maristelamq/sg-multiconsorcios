@@ -48,13 +48,16 @@ const Index = () => {
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
-                <Link to="/import">Iniciar Importação</Link>
+                <Link to="/dashboard">Ver Dashboard</Link>
+              </Button>
+              <Button asChild size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20">
+                <Link to="/import">Nova Importação</Link>
               </Button>
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white/10"
+                className="border-white/50 text-white hover:bg-white/10"
               >
                 <a href="#features">Conhecer Recursos</a>
               </Button>
