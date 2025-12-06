@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, ArrowLeft, FileSpreadsheet, TrendingUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { ImportData } from "@/pages/Import";
 import * as XLSX from "xlsx";
+import { detectLayoutType, DetectedLayout } from "@/lib/import/mappingConfig";
+import { validateAllRows, ValidationResult } from "@/lib/import/validators";
 
 interface ValidationStepProps {
   importData: ImportData;
@@ -24,6 +26,8 @@ const ValidationStep = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [detectedLayout, setDetectedLayout] = useState<DetectedLayout | null>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
   useEffect(() => {
     const processFile = async () => {
@@ -33,10 +37,9 @@ const ValidationStep = ({
       setProgress(0);
 
       try {
-        // Simulate progress
         const progressInterval = setInterval(() => {
-          setProgress((prev) => Math.min(prev + 10, 90));
-        }, 200);
+          setProgress((prev) => Math.min(prev + 5, 85));
+        }, 150);
 
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -46,26 +49,47 @@ const ValidationStep = ({
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-          clearInterval(progressInterval);
-          setProgress(100);
+          setProgress(70);
 
-          // Detect import type based on columns
-          const firstRow = jsonData[0] as any;
+          // Get columns
+          const firstRow = jsonData[0] as Record<string, any>;
           const columns = Object.keys(firstRow || {});
 
+          // Detect layout type
+          const layout = detectLayoutType(columns);
+          setDetectedLayout(layout);
+
           let detectedType: "historico" | "pagamento" | null = null;
-          if (columns.includes("DATA DA VENDA") && columns.includes("CRÉDITO ATUAL")) {
-            detectedType = "historico";
-          } else if (columns.includes("DATA  VENDA") && columns.includes("PARCELA PAGA")) {
-            detectedType = "pagamento";
+          if (layout) {
+            detectedType = layout.type;
           }
 
-          // Simple validation
+          setProgress(85);
+
+          // Validate all rows
+          let validation: ValidationResult | null = null;
           const errors: string[] = [];
           const warnings: string[] = [];
 
           if (!detectedType) {
-            errors.push("Não foi possível identificar o tipo de planilha");
+            errors.push("Não foi possível identificar o tipo de planilha automaticamente");
+          } else {
+            validation = validateAllRows(jsonData as Record<string, any>[], columns, detectedType);
+            setValidationResult(validation);
+
+            validation.errors.slice(0, 10).forEach(err => {
+              errors.push(`Linha ${err.row}: ${err.message}`);
+            });
+            if (validation.errors.length > 10) {
+              errors.push(`... e mais ${validation.errors.length - 10} erros`);
+            }
+
+            validation.warnings.slice(0, 10).forEach(warn => {
+              warnings.push(`Linha ${warn.row}: ${warn.message}`);
+            });
+            if (validation.warnings.length > 10) {
+              warnings.push(`... e mais ${validation.warnings.length - 10} avisos`);
+            }
           }
 
           if (jsonData.length === 0) {
@@ -76,13 +100,16 @@ const ValidationStep = ({
             warnings.push(`Planilha grande (${jsonData.length} linhas) - processamento pode levar alguns minutos`);
           }
 
+          clearInterval(progressInterval);
+          setProgress(100);
+
           setImportData({
             ...importData,
             type: detectedType,
             data: jsonData,
             validationResults: {
               totalRows: jsonData.length,
-              validRows: errors.length === 0 ? jsonData.length : 0,
+              validRows: validation?.summary.validRows || 0,
               errors,
               warnings,
             },
@@ -97,12 +124,12 @@ const ValidationStep = ({
               });
             } else {
               toast({
-                title: "Erros encontrados",
-                description: "Revise os erros antes de prosseguir",
+                title: "Atenção aos avisos",
+                description: "Revise os avisos antes de prosseguir",
                 variant: "destructive",
               });
             }
-          }, 500);
+          }, 300);
         };
 
         reader.readAsBinaryString(importData.file);
@@ -122,7 +149,14 @@ const ValidationStep = ({
   const canProceed =
     !isProcessing &&
     importData.validationResults &&
-    importData.validationResults.errors.length === 0;
+    importData.type !== null;
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
 
   return (
     <motion.div
@@ -136,7 +170,7 @@ const ValidationStep = ({
           Validação e Reconhecimento
         </h2>
         <p className="mt-2 text-muted-foreground">
-          Analisando estrutura e validando dados da planilha
+          Analisando estrutura, mapeando colunas e validando dados
         </p>
       </div>
 
@@ -148,6 +182,11 @@ const ValidationStep = ({
               Processando arquivo...
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
+              {progress < 70 ? 'Lendo dados da planilha...' : 
+               progress < 85 ? 'Detectando tipo de importação...' : 
+               'Validando registros...'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
               {progress}% concluído
             </p>
           </div>
@@ -162,45 +201,105 @@ const ValidationStep = ({
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="border-border p-4">
-              <p className="text-sm text-muted-foreground">Tipo Detectado</p>
-              <p className="mt-2 text-xl font-semibold text-foreground">
-                {importData.type === "historico"
-                  ? "Histórico Geral"
-                  : importData.type === "pagamento"
-                  ? "Pagamento"
-                  : "Não identificado"}
-              </p>
+          {/* Layout Detection */}
+          {detectedLayout && (
+            <Card className="border-primary/50 bg-primary/5 p-4">
+              <div className="flex items-center gap-3">
+                <FileSpreadsheet className="h-5 w-5 text-primary" />
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">
+                    Tipo Detectado: {detectedLayout.type === 'historico' ? 'Histórico Geral' : 'Pagamento de Comissões'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Confiança: {(detectedLayout.confidence * 100).toFixed(0)}% • 
+                    {detectedLayout.matchedColumns.length} colunas mapeadas
+                  </p>
+                </div>
+                <Badge variant={detectedLayout.confidence >= 0.5 ? "default" : "secondary"}>
+                  {detectedLayout.confidence >= 0.5 ? 'Alta confiança' : 'Verificar mapeamento'}
+                </Badge>
+              </div>
             </Card>
+          )}
 
+          {/* Summary Cards */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="border-border p-4">
               <p className="text-sm text-muted-foreground">Total de Linhas</p>
-              <p className="mt-2 text-xl font-semibold text-foreground">
-                {importData.validationResults?.totalRows || 0}
+              <p className="mt-2 text-2xl font-bold text-foreground">
+                {importData.validationResults?.totalRows.toLocaleString('pt-BR') || 0}
               </p>
             </Card>
 
             <Card className="border-border p-4">
               <p className="text-sm text-muted-foreground">Linhas Válidas</p>
-              <p className="mt-2 text-xl font-semibold text-success">
-                {importData.validationResults?.validRows || 0}
+              <p className="mt-2 text-2xl font-bold text-success">
+                {validationResult?.summary.validRows.toLocaleString('pt-BR') || 0}
+              </p>
+            </Card>
+
+            <Card className="border-border p-4">
+              <p className="text-sm text-muted-foreground">Valor Total Crédito</p>
+              <p className="mt-2 text-xl font-bold text-foreground">
+                {formatCurrency(validationResult?.summary.totalValorCredito || 0)}
+              </p>
+            </Card>
+
+            <Card className="border-border p-4">
+              <p className="text-sm text-muted-foreground">Valor Recebido</p>
+              <p className="mt-2 text-xl font-bold text-primary">
+                {formatCurrency(validationResult?.summary.totalValorRecebido || 0)}
               </p>
             </Card>
           </div>
+
+          {/* Financial Summary */}
+          {validationResult && (
+            <Card className="border-border p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">Resumo Financeiro</h3>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">Divergências</p>
+                  <p className="text-lg font-semibold text-warning">
+                    {validationResult.summary.divergencias}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">Inadimplências</p>
+                  <p className="text-lg font-semibold text-destructive">
+                    {validationResult.summary.inadimplencias}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">Cancelamentos</p>
+                  <p className="text-lg font-semibold text-muted-foreground">
+                    {validationResult.summary.cancelamentos}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">Estornos</p>
+                  <p className="text-lg font-semibold text-muted-foreground">
+                    {validationResult.summary.estornos}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Errors */}
           {importData.validationResults?.errors &&
             importData.validationResults.errors.length > 0 && (
               <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
                   <div className="flex-1">
                     <p className="font-medium text-destructive">
-                      Erros Encontrados
+                      Erros Encontrados ({importData.validationResults.errors.length})
                     </p>
-                    <ul className="mt-2 space-y-1">
+                    <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto">
                       {importData.validationResults.errors.map((error, index) => (
                         <li key={index} className="text-sm text-destructive/90">
                           • {error}
@@ -217,10 +316,12 @@ const ValidationStep = ({
             importData.validationResults.warnings.length > 0 && (
               <div className="rounded-lg border border-warning/50 bg-warning/10 p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-warning" />
+                  <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
                   <div className="flex-1">
-                    <p className="font-medium text-warning">Avisos</p>
-                    <ul className="mt-2 space-y-1">
+                    <p className="font-medium text-warning">
+                      Avisos ({importData.validationResults.warnings.length})
+                    </p>
+                    <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto">
                       {importData.validationResults.warnings.map((warning, index) => (
                         <li key={index} className="text-sm text-warning/90">
                           • {warning}
@@ -233,7 +334,7 @@ const ValidationStep = ({
             )}
 
           {/* Success */}
-          {canProceed && (
+          {canProceed && importData.validationResults?.errors.length === 0 && (
             <div className="rounded-lg border border-success/50 bg-success/10 p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-success" />
