@@ -81,9 +81,14 @@ const TOLERANCE_ABSOLUTE = 0.01; // R$ 0.01
 export function parseDate(value: any): Date | null {
   if (!value) return null;
   
-  // Handle Excel serial date
+  // Handle Excel serial date (Windows 1900 date system)
+  // Excel epoch starts at 1900-01-01 (serial 1), but Excel incorrectly treats 1900 as a leap year
+  // The base date is actually December 30, 1899 to account for this bug
   if (typeof value === 'number') {
-    const excelDate = new Date((value - 25569) * 86400 * 1000);
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30)); // Dec 30, 1899
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    const excelDate = new Date(excelEpoch.getTime() + value * millisecondsPerDay);
+    
     if (!isNaN(excelDate.getTime())) return excelDate;
   }
   
