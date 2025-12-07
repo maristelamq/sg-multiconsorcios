@@ -7,6 +7,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Import from "./pages/Import";
 import NotFound from "./pages/NotFound";
+import AppLayout from "./components/layout/AppLayout";
+import Empresas from "./pages/cadastros/Empresas";
+import Administradoras from "./pages/cadastros/Administradoras";
+import Representantes from "./pages/cadastros/Representantes";
+import Vendedores from "./pages/cadastros/Vendedores";
+import Clientes from "./pages/cadastros/Clientes";
+import Cotas from "./pages/cadastros/Cotas";
 
 const queryClient = new QueryClient();
 
@@ -18,9 +25,16 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/import" element={<Import />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/import" element={<Import />} />
+            <Route path="/cadastros/empresas" element={<Empresas />} />
+            <Route path="/cadastros/administradoras" element={<Administradoras />} />
+            <Route path="/cadastros/representantes" element={<Representantes />} />
+            <Route path="/cadastros/vendedores" element={<Vendedores />} />
+            <Route path="/cadastros/clientes" element={<Clientes />} />
+            <Route path="/cadastros/cotas" element={<Cotas />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

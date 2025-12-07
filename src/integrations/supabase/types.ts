@@ -17,23 +17,34 @@ export type Database = {
       administradoras: {
         Row: {
           created_at: string
+          empresa_id: string | null
           id: string
           nome: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "administradoras_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ajustes_conciliacao: {
         Row: {
@@ -81,24 +92,41 @@ export type Database = {
       }
       clientes: {
         Row: {
+          contato: string | null
+          cpf_cnpj: string | null
           created_at: string
+          empresa_id: string | null
           id: string
           nome: string
           updated_at: string
         }
         Insert: {
+          contato?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome: string
           updated_at?: string
         }
         Update: {
+          contato?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clientes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comissoes_pagas: {
         Row: {
@@ -258,8 +286,10 @@ export type Database = {
           administradora_id: string | null
           codigo: string
           created_at: string
+          empresa_id: string | null
           grupo: string
           id: string
+          status: string | null
           tipo: string
           updated_at: string
         }
@@ -267,8 +297,10 @@ export type Database = {
           administradora_id?: string | null
           codigo: string
           created_at?: string
+          empresa_id?: string | null
           grupo: string
           id?: string
+          status?: string | null
           tipo: string
           updated_at?: string
         }
@@ -276,8 +308,10 @@ export type Database = {
           administradora_id?: string | null
           codigo?: string
           created_at?: string
+          empresa_id?: string | null
           grupo?: string
           id?: string
+          status?: string | null
           tipo?: string
           updated_at?: string
         }
@@ -289,7 +323,38 @@ export type Database = {
             referencedRelation: "administradoras"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cotas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      empresas: {
+        Row: {
+          cnpj: string | null
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       import_logs: {
         Row: {
@@ -373,33 +438,69 @@ export type Database = {
       }
       recebimentos: {
         Row: {
+          administradora_id: string | null
+          conciliado: boolean | null
+          cota_id: string | null
           created_at: string
           data_credito: string
+          empresa_id: string | null
           id: string
+          origem: string | null
           parcela: number
           updated_at: string
           valor_recebido: number
           venda_id: string
         }
         Insert: {
+          administradora_id?: string | null
+          conciliado?: boolean | null
+          cota_id?: string | null
           created_at?: string
           data_credito: string
+          empresa_id?: string | null
           id?: string
+          origem?: string | null
           parcela: number
           updated_at?: string
           valor_recebido: number
           venda_id: string
         }
         Update: {
+          administradora_id?: string | null
+          conciliado?: boolean | null
+          cota_id?: string | null
           created_at?: string
           data_credito?: string
+          empresa_id?: string | null
           id?: string
+          origem?: string | null
           parcela?: number
           updated_at?: string
           valor_recebido?: number
           venda_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "recebimentos_administradora_id_fkey"
+            columns: ["administradora_id"]
+            isOneToOne: false
+            referencedRelation: "administradoras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recebimentos_cota_id_fkey"
+            columns: ["cota_id"]
+            isOneToOne: false
+            referencedRelation: "cotas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recebimentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recebimentos_venda_id_fkey"
             columns: ["venda_id"]
@@ -412,23 +513,43 @@ export type Database = {
       representantes: {
         Row: {
           created_at: string
+          empresa_id: string | null
           id: string
           nome: string
+          parcelas: number | null
+          percentual: number | null
+          tipo: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome: string
+          parcelas?: number | null
+          percentual?: number | null
+          tipo?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome?: string
+          parcelas?: number | null
+          percentual?: number | null
+          tipo?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "representantes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendas: {
         Row: {
@@ -436,6 +557,8 @@ export type Database = {
           cota_id: string | null
           created_at: string
           data_venda: string
+          docs_status: string | null
+          empresa_id: string | null
           id: string
           observacao: string | null
           representante_id: string | null
@@ -443,12 +566,15 @@ export type Database = {
           updated_at: string
           valor_credito: number
           valor_total: number
+          vendedor_id: string | null
         }
         Insert: {
           cliente_id?: string | null
           cota_id?: string | null
           created_at?: string
           data_venda: string
+          docs_status?: string | null
+          empresa_id?: string | null
           id?: string
           observacao?: string | null
           representante_id?: string | null
@@ -456,12 +582,15 @@ export type Database = {
           updated_at?: string
           valor_credito: number
           valor_total: number
+          vendedor_id?: string | null
         }
         Update: {
           cliente_id?: string | null
           cota_id?: string | null
           created_at?: string
           data_venda?: string
+          docs_status?: string | null
+          empresa_id?: string | null
           id?: string
           observacao?: string | null
           representante_id?: string | null
@@ -469,6 +598,7 @@ export type Database = {
           updated_at?: string
           valor_credito?: number
           valor_total?: number
+          vendedor_id?: string | null
         }
         Relationships: [
           {
@@ -486,34 +616,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "vendas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "vendas_representante_id_fkey"
             columns: ["representante_id"]
             isOneToOne: false
             referencedRelation: "representantes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vendas_vendedor_id_fkey"
+            columns: ["vendedor_id"]
+            isOneToOne: false
+            referencedRelation: "vendedores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       vendedores: {
         Row: {
+          cpf: string | null
           created_at: string
+          empresa_id: string | null
+          exige_nf: boolean | null
           id: string
           nome: string
+          representante_id: string | null
           updated_at: string
         }
         Insert: {
+          cpf?: string | null
           created_at?: string
+          empresa_id?: string | null
+          exige_nf?: boolean | null
           id?: string
           nome: string
+          representante_id?: string | null
           updated_at?: string
         }
         Update: {
+          cpf?: string | null
           created_at?: string
+          empresa_id?: string | null
+          exige_nf?: boolean | null
           id?: string
           nome?: string
+          representante_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendedores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendedores_representante_id_fkey"
+            columns: ["representante_id"]
+            isOneToOne: false
+            referencedRelation: "representantes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
