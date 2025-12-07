@@ -21,6 +21,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { ImportData } from "@/pages/Import";
 import { processImport, ImportProgress, ImportResult } from "@/lib/import/importService";
 import type { DivergenceItem } from "@/components/import/DivergenceReviewStep";
+import { parseDate } from "@/lib/import/validators";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import * as XLSX from "xlsx";
 
 interface ConfirmationStepProps {
@@ -133,6 +136,30 @@ const ConfirmationStep = ({
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  };
+
+  // Formata valores inteligentemente, detectando datas do Excel
+  const formatPreviewValue = (value: any, columnName: string): string => {
+    if (value === null || value === undefined) return '-';
+    
+    // Se a coluna contém "DATA" e o valor é um número (serial do Excel)
+    if (typeof value === 'number' && columnName.toUpperCase().includes('DATA')) {
+      const date = parseDate(value);
+      if (date) {
+        return format(date, 'dd/MM/yyyy', { locale: ptBR });
+      }
+    }
+    
+    // Para outros valores numéricos que parecem datas do Excel (35000-50000 range)
+    if (typeof value === 'number' && value > 35000 && value < 50000) {
+      const date = parseDate(value);
+      if (date) {
+        return format(date, 'dd/MM/yyyy', { locale: ptBR });
+      }
+    }
+    
+    const strValue = String(value);
+    return strValue.length > 25 ? strValue.slice(0, 25) + '...' : strValue;
   };
 
   // Show result screen after import
@@ -348,18 +375,18 @@ const ConfirmationStep = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {importData.data.slice(0, 5).map((row: any, index) => (
-                    <tr key={index} className="border-b border-border/50">
-                      {Object.values(row)
-                        .slice(0, 5)
-                        .map((value: any, i) => (
+                  {importData.data.slice(0, 5).map((row: any, index) => {
+                    const keys = Object.keys(row);
+                    return (
+                      <tr key={index} className="border-b border-border/50">
+                        {keys.slice(0, 5).map((key, i) => (
                           <td key={i} className="px-4 py-2 text-foreground">
-                            {String(value).slice(0, 25)}
-                            {String(value).length > 25 ? "..." : ""}
+                            {formatPreviewValue(row[key], key)}
                           </td>
                         ))}
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
