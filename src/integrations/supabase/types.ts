@@ -389,6 +389,57 @@ export type Database = {
           },
         ]
       }
+      contas_pagar: {
+        Row: {
+          competencia: string
+          created_at: string
+          data_pagamento: string | null
+          empresa_id: string | null
+          forma_pagamento: string | null
+          id: string
+          observacao: string | null
+          representante_id: string | null
+          status: string | null
+          tipo: string
+          updated_at: string
+          valor_pago: number | null
+          valor_total: number
+          vendedor_id: string | null
+        }
+        Insert: {
+          competencia: string
+          created_at?: string
+          data_pagamento?: string | null
+          empresa_id?: string | null
+          forma_pagamento?: string | null
+          id?: string
+          observacao?: string | null
+          representante_id?: string | null
+          status?: string | null
+          tipo?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_total?: number
+          vendedor_id?: string | null
+        }
+        Update: {
+          competencia?: string
+          created_at?: string
+          data_pagamento?: string | null
+          empresa_id?: string | null
+          forma_pagamento?: string | null
+          id?: string
+          observacao?: string | null
+          representante_id?: string | null
+          status?: string | null
+          tipo?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_total?: number
+          vendedor_id?: string | null
+        }
+        Relationships: []
+      }
       cotas: {
         Row: {
           administradora_id: string | null
@@ -439,6 +490,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      documentos: {
+        Row: {
+          aprovado_por: string | null
+          arquivo_url: string | null
+          created_at: string
+          data_aprovacao: string | null
+          id: string
+          nome_arquivo: string
+          observacao: string | null
+          status: string | null
+          tipo: string
+          updated_at: string
+          venda_id: string
+        }
+        Insert: {
+          aprovado_por?: string | null
+          arquivo_url?: string | null
+          created_at?: string
+          data_aprovacao?: string | null
+          id?: string
+          nome_arquivo: string
+          observacao?: string | null
+          status?: string | null
+          tipo: string
+          updated_at?: string
+          venda_id: string
+        }
+        Update: {
+          aprovado_por?: string | null
+          arquivo_url?: string | null
+          created_at?: string
+          data_aprovacao?: string | null
+          id?: string
+          nome_arquivo?: string
+          observacao?: string | null
+          status?: string | null
+          tipo?: string
+          updated_at?: string
+          venda_id?: string
+        }
+        Relationships: []
       }
       empresas: {
         Row: {
