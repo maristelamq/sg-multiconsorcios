@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, AlertCircle, CheckCircle2, ArrowLeft, FileSpreadsheet, TrendingUp, AlertTriangle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, ArrowLeft, FileSpreadsheet, TrendingUp, AlertTriangle, Table2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import type { ImportData } from "@/pages/Import";
 import * as XLSX from "xlsx";
 import { detectLayoutType, DetectedLayout } from "@/lib/import/mappingConfig";
-import { validateAllRows, ValidationResult } from "@/lib/import/validators";
-
+import { validateAllRows, ValidationResult, validateRow, ParsedRowData } from "@/lib/import/validators";
+import DataPreviewTable from "./DataPreviewTable";
 interface ValidationStepProps {
   importData: ImportData;
   setImportData: (data: ImportData) => void;
@@ -30,6 +31,8 @@ const ValidationStep = ({
   const [progress, setProgress] = useState(0);
   const [detectedLayout, setDetectedLayout] = useState<DetectedLayout | null>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [parsedRows, setParsedRows] = useState<ParsedRowData[]>([]);
+  const [showPreview, setShowPreview] = useState(true);
 
   useEffect(() => {
     const processFile = async () => {
@@ -78,6 +81,12 @@ const ValidationStep = ({
           } else {
             validation = validateAllRows(jsonData as Record<string, any>[], columns, detectedType);
             setValidationResult(validation);
+            
+            // Parse all rows to get structured data for preview
+            const allParsedRows = (jsonData as Record<string, any>[]).map((row, idx) => 
+              validateRow(row, idx + 1, columns, detectedType!).data
+            );
+            setParsedRows(allParsedRows);
             
             // Call the callback to pass validation result to parent
             if (onValidationComplete) {
@@ -294,6 +303,35 @@ const ValidationStep = ({
                 </div>
               </div>
             </Card>
+          )}
+
+          {/* Data Preview */}
+          {parsedRows.length > 0 && (
+            <Collapsible open={showPreview} onOpenChange={setShowPreview}>
+              <Card className="border-border">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Table2 className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold text-foreground">Preview dos Dados Importados</h3>
+                      <Badge variant="secondary">{parsedRows.length} registros</Badge>
+                    </div>
+                    <Button variant="ghost" size="sm">
+                      {showPreview ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="px-4 pb-4">
+                    <DataPreviewTable data={parsedRows} maxRows={50} />
+                  </div>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           )}
 
           {/* Errors */}
