@@ -42,7 +42,7 @@ const cache = {
   cotas: new Map<string, string>(),
 };
 
-async function getOrCreateAdministradora(nome: string): Promise<string | null> {
+async function getOrCreateAdministradora(nome: string, stats: ImportResult['stats']): Promise<string | null> {
   if (!nome) return null;
   
   const normalizado = nome.trim().toUpperCase();
@@ -70,10 +70,11 @@ async function getOrCreateAdministradora(nome: string): Promise<string | null> {
   if (error || !created) return null;
   
   cache.administradoras.set(normalizado, created.id);
+  stats.administradorasCriadas++;
   return created.id;
 }
 
-async function getOrCreateRepresentante(nome: string): Promise<string | null> {
+async function getOrCreateRepresentante(nome: string, stats: ImportResult['stats']): Promise<string | null> {
   if (!nome) return null;
   
   const normalizado = nome.trim().toUpperCase();
@@ -101,6 +102,7 @@ async function getOrCreateRepresentante(nome: string): Promise<string | null> {
   if (error || !created) return null;
   
   cache.representantes.set(normalizado, created.id);
+  stats.representantesCriados++;
   return created.id;
 }
 
@@ -294,8 +296,8 @@ export async function processImport(
       const data = validation.data;
       
       // Create/get entities
-      const administradoraId = await getOrCreateAdministradora(data.administradora);
-      const representanteId = await getOrCreateRepresentante(data.representante);
+      const administradoraId = await getOrCreateAdministradora(data.administradora, stats);
+      const representanteId = await getOrCreateRepresentante(data.representante, stats);
       const vendedor1Id = await getOrCreateVendedor(data.vendedor1);
       const vendedor2Id = await getOrCreateVendedor(data.vendedor2);
       const clienteId = await getOrCreateCliente(data.cliente);
