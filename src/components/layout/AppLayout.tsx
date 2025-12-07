@@ -14,17 +14,32 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Menu,
   Settings2,
-  DollarSign
+  DollarSign,
+  ShoppingCart,
+  Plus,
+  Wallet,
+  Receipt,
+  CreditCard,
+  CheckCircle,
+  Scale
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Importar", href: "/import", icon: Upload },
+  { type: "divider", label: "Vendas" },
+  { name: "Todas as Vendas", href: "/vendas", icon: ShoppingCart },
+  { name: "Nova Venda", href: "/vendas/nova", icon: Plus },
   { type: "divider", label: "Comissões" },
   { name: "Regras", href: "/comissoes/regras", icon: Settings2 },
   { name: "A Receber", href: "/comissoes/receber", icon: DollarSign },
+  { type: "divider", label: "Financeiro" },
+  { name: "Contas a Receber", href: "/financeiro/receber", icon: Wallet },
+  { name: "Recebidos", href: "/financeiro/recebidos", icon: Receipt },
+  { name: "Contas a Pagar", href: "/financeiro/pagar", icon: CreditCard },
+  { name: "Pagos", href: "/financeiro/pagos", icon: CheckCircle },
+  { name: "Conciliação", href: "/financeiro/conciliacao", icon: Scale },
   { type: "divider", label: "Cadastros" },
   { name: "Empresas", href: "/cadastros/empresas", icon: Building2 },
   { name: "Administradoras", href: "/cadastros/administradoras", icon: Landmark },
@@ -52,9 +67,12 @@ export default function AppLayout() {
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">ERP</span>
+                <span className="text-primary-foreground font-bold text-xs">SGC</span>
               </div>
-              <span className="font-semibold text-lg">Consórcios</span>
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm leading-tight">Sistema de Gestão</span>
+                <span className="text-xs text-muted-foreground leading-tight">de Consórcios</span>
+              </div>
             </Link>
           )}
           <Button
