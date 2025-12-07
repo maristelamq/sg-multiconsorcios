@@ -185,6 +185,114 @@ export type Database = {
           },
         ]
       }
+      comissoes_receber: {
+        Row: {
+          base_calculo: number
+          competencia_origem: string
+          competencia_pagamento: string
+          created_at: string
+          data_liberacao: string | null
+          data_pagamento: string | null
+          faixa_id: string | null
+          id: string
+          motivo_bloqueio: string | null
+          parcela: number
+          percentual: number
+          regra_id: string | null
+          representante_id: string | null
+          status: string
+          tipo: string
+          total_parcelas: number
+          updated_at: string
+          valor_pago: number | null
+          valor_previsto: number
+          venda_id: string
+          vendedor_id: string | null
+        }
+        Insert: {
+          base_calculo: number
+          competencia_origem: string
+          competencia_pagamento: string
+          created_at?: string
+          data_liberacao?: string | null
+          data_pagamento?: string | null
+          faixa_id?: string | null
+          id?: string
+          motivo_bloqueio?: string | null
+          parcela: number
+          percentual: number
+          regra_id?: string | null
+          representante_id?: string | null
+          status?: string
+          tipo?: string
+          total_parcelas: number
+          updated_at?: string
+          valor_pago?: number | null
+          valor_previsto: number
+          venda_id: string
+          vendedor_id?: string | null
+        }
+        Update: {
+          base_calculo?: number
+          competencia_origem?: string
+          competencia_pagamento?: string
+          created_at?: string
+          data_liberacao?: string | null
+          data_pagamento?: string | null
+          faixa_id?: string | null
+          id?: string
+          motivo_bloqueio?: string | null
+          parcela?: number
+          percentual?: number
+          regra_id?: string | null
+          representante_id?: string | null
+          status?: string
+          tipo?: string
+          total_parcelas?: number
+          updated_at?: string
+          valor_pago?: number | null
+          valor_previsto?: number
+          venda_id?: string
+          vendedor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comissoes_receber_faixa_id_fkey"
+            columns: ["faixa_id"]
+            isOneToOne: false
+            referencedRelation: "faixas_comissao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comissoes_receber_regra_id_fkey"
+            columns: ["regra_id"]
+            isOneToOne: false
+            referencedRelation: "regras_comissao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comissoes_receber_representante_id_fkey"
+            columns: ["representante_id"]
+            isOneToOne: false
+            referencedRelation: "representantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comissoes_receber_venda_id_fkey"
+            columns: ["venda_id"]
+            isOneToOne: false
+            referencedRelation: "vendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comissoes_receber_vendedor_id_fkey"
+            columns: ["vendedor_id"]
+            isOneToOne: false
+            referencedRelation: "vendedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comissoes_regras: {
         Row: {
           created_at: string
@@ -356,6 +464,44 @@ export type Database = {
         }
         Relationships: []
       }
+      faixas_comissao: {
+        Row: {
+          created_at: string
+          id: string
+          meses_carencia: number | null
+          ordem: number
+          parcelas: number
+          percentual: number
+          regra_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meses_carencia?: number | null
+          ordem?: number
+          parcelas?: number
+          percentual: number
+          regra_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meses_carencia?: number | null
+          ordem?: number
+          parcelas?: number
+          percentual?: number
+          regra_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faixas_comissao_regra_id_fkey"
+            columns: ["regra_id"]
+            isOneToOne: false
+            referencedRelation: "regras_comissao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_logs: {
         Row: {
           created_at: string
@@ -402,8 +548,11 @@ export type Database = {
         Row: {
           created_at: string
           data_registro: string
+          dias_atraso: number | null
           id: string
           observacao: string | null
+          parcela: number | null
+          status: string | null
           updated_at: string
           valor: number
           venda_id: string
@@ -411,8 +560,11 @@ export type Database = {
         Insert: {
           created_at?: string
           data_registro?: string
+          dias_atraso?: number | null
           id?: string
           observacao?: string | null
+          parcela?: number | null
+          status?: string | null
           updated_at?: string
           valor: number
           venda_id: string
@@ -420,8 +572,11 @@ export type Database = {
         Update: {
           created_at?: string
           data_registro?: string
+          dias_atraso?: number | null
           id?: string
           observacao?: string | null
+          parcela?: number | null
+          status?: string | null
           updated_at?: string
           valor?: number
           venda_id?: string
@@ -506,6 +661,57 @@ export type Database = {
             columns: ["venda_id"]
             isOneToOne: false
             referencedRelation: "vendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regras_comissao: {
+        Row: {
+          administradora_id: string | null
+          ativo: boolean | null
+          created_at: string
+          empresa_id: string | null
+          grupo_filtro: string | null
+          id: string
+          nome: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          administradora_id?: string | null
+          ativo?: boolean | null
+          created_at?: string
+          empresa_id?: string | null
+          grupo_filtro?: string | null
+          id?: string
+          nome: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          administradora_id?: string | null
+          ativo?: boolean | null
+          created_at?: string
+          empresa_id?: string | null
+          grupo_filtro?: string | null
+          id?: string
+          nome?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regras_comissao_administradora_id_fkey"
+            columns: ["administradora_id"]
+            isOneToOne: false
+            referencedRelation: "administradoras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "regras_comissao_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
         ]
