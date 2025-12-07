@@ -137,7 +137,7 @@ async function getOrCreateVendedor(nome: string): Promise<string | null> {
   return created.id;
 }
 
-async function getOrCreateCliente(nome: string): Promise<string | null> {
+async function getOrCreateCliente(nome: string, stats: ImportResult['stats']): Promise<string | null> {
   if (!nome) return null;
   
   const normalizado = nome.trim().toUpperCase();
@@ -165,6 +165,7 @@ async function getOrCreateCliente(nome: string): Promise<string | null> {
   if (error || !created) return null;
   
   cache.clientes.set(normalizado, created.id);
+  stats.clientesCriados++;
   return created.id;
 }
 
@@ -300,7 +301,7 @@ export async function processImport(
       const representanteId = await getOrCreateRepresentante(data.representante, stats);
       const vendedor1Id = await getOrCreateVendedor(data.vendedor1);
       const vendedor2Id = await getOrCreateVendedor(data.vendedor2);
-      const clienteId = await getOrCreateCliente(data.cliente);
+      const clienteId = await getOrCreateCliente(data.cliente, stats);
       const cotaId = await getOrCreateCota(
         data.cota, 
         data.grupo, 
