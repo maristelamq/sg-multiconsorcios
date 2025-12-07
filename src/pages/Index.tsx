@@ -66,10 +66,7 @@ const Index = () => {
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
-                <Link to="/dashboard">Acessar Dashboard</Link>
-              </Button>
-              <Button asChild size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20">
-                <Link to="/vendas/nova">Nova Venda</Link>
+                <Link to="/auth">Acessar Sistema</Link>
               </Button>
               <Button
                 asChild

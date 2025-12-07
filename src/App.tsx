@@ -7,7 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Import from "./pages/Import";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import AppLayout from "./components/layout/AppLayout";
+import { AuthProvider } from "./hooks/useAuth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Empresas from "./pages/cadastros/Empresas";
 import Administradoras from "./pages/cadastros/Administradoras";
 import Representantes from "./pages/cadastros/Representantes";
@@ -30,34 +33,37 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/import" element={<Import />} />
-            <Route path="/vendas" element={<Vendas />} />
-            <Route path="/vendas/nova" element={<NovaVenda />} />
-            <Route path="/vendas/:id" element={<VendaDetalhes />} />
-            <Route path="/cadastros/empresas" element={<Empresas />} />
-            <Route path="/cadastros/administradoras" element={<Administradoras />} />
-            <Route path="/cadastros/representantes" element={<Representantes />} />
-            <Route path="/cadastros/vendedores" element={<Vendedores />} />
-            <Route path="/cadastros/clientes" element={<Clientes />} />
-            <Route path="/cadastros/cotas" element={<Cotas />} />
-            <Route path="/comissoes/regras" element={<RegrasComissao />} />
-            <Route path="/comissoes/receber" element={<ComissoesReceber />} />
-            <Route path="/financeiro/a-receber" element={<ContasReceber />} />
-            <Route path="/financeiro/recebidos" element={<Recebidos />} />
-            <Route path="/financeiro/a-pagar" element={<ContasPagar />} />
-            <Route path="/financeiro/pagos" element={<Pagos />} />
-            <Route path="/financeiro/conciliacao" element={<Conciliacao />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/import" element={<Import />} />
+              <Route path="/vendas" element={<Vendas />} />
+              <Route path="/vendas/nova" element={<NovaVenda />} />
+              <Route path="/vendas/:id" element={<VendaDetalhes />} />
+              <Route path="/cadastros/empresas" element={<Empresas />} />
+              <Route path="/cadastros/administradoras" element={<Administradoras />} />
+              <Route path="/cadastros/representantes" element={<Representantes />} />
+              <Route path="/cadastros/vendedores" element={<Vendedores />} />
+              <Route path="/cadastros/clientes" element={<Clientes />} />
+              <Route path="/cadastros/cotas" element={<Cotas />} />
+              <Route path="/comissoes/regras" element={<RegrasComissao />} />
+              <Route path="/comissoes/receber" element={<ComissoesReceber />} />
+              <Route path="/financeiro/receber" element={<ContasReceber />} />
+              <Route path="/financeiro/recebidos" element={<Recebidos />} />
+              <Route path="/financeiro/pagar" element={<ContasPagar />} />
+              <Route path="/financeiro/pagos" element={<Pagos />} />
+              <Route path="/financeiro/conciliacao" element={<Conciliacao />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

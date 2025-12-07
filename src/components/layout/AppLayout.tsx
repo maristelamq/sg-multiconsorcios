@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   LayoutDashboard, 
   Upload, 
@@ -22,7 +23,8 @@ import {
   Receipt,
   CreditCard,
   CheckCircle,
-  Scale
+  Scale,
+  LogOut
 } from "lucide-react";
 
 const navigation = [
@@ -52,7 +54,13 @@ const navigation = [
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -125,6 +133,29 @@ export default function AppLayout() {
             })}
           </nav>
         </ScrollArea>
+
+        {/* User Profile & Logout */}
+        <div className="border-t p-2">
+          {!collapsed && profile && (
+            <div className="px-3 py-2 mb-2">
+              <p className="text-sm font-medium text-foreground truncate">{profile.nome}</p>
+              <p className="text-xs text-muted-foreground truncate">{profile.cargo || 'Usuário'}</p>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size={collapsed ? "icon" : "default"}
+            onClick={handleLogout}
+            className={cn(
+              "w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+              collapsed && "justify-center"
+            )}
+            title="Sair"
+          >
+            <LogOut className="h-5 w-5" />
+            {!collapsed && <span className="ml-2">Sair</span>}
+          </Button>
+        </div>
       </aside>
 
       {/* Main Content */}
