@@ -14,12 +14,17 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Settings2,
+  DollarSign
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Importar", href: "/import", icon: Upload },
+  { type: "divider", label: "Comissões" },
+  { name: "Regras", href: "/comissoes/regras", icon: Settings2 },
+  { name: "A Receber", href: "/comissoes/receber", icon: DollarSign },
   { type: "divider", label: "Cadastros" },
   { name: "Empresas", href: "/cadastros/empresas", icon: Building2 },
   { name: "Administradoras", href: "/cadastros/administradoras", icon: Landmark },
