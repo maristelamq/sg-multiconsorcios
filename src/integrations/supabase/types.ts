@@ -1101,6 +1101,7 @@ export type Database = {
     }
     Functions: {
       get_user_empresa_id: { Args: { _user_id: string }; Returns: string }
+      has_elevated_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1108,6 +1109,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_or_master: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
